@@ -1,12 +1,12 @@
 // Initialize TonConnect
 const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-    manifestUrl: 'https://your-app-url.com/tonconnect-manifest.json',
+    manifestUrl: 'https://ozzytheman.github.io/tgmini/tonconnect-manifest.json',
     buttonRootId: 'ton-connect'
 });
 
 // Set TMA return URL
 tonConnectUI.uiOptions = {
-    twaReturnUrl: 'https://t.me/your_bot_name'
+    twaReturnUrl: 'https://t.me/mystixapp_bot'
 };
 
 // Raffle state
