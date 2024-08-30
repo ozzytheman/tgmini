@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TON Raffle TMA</title>
+    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        button {
+            margin: 10px 0;
+            padding: 10px;
+            cursor: pointer;
+        }
+        #raffle-info, #winner-info {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>TON Raffle TMA</h1>
+    <div id="ton-connect"></div>
+    <div id="raffle-info">
+        <h2>Raffle Information</h2>
+        <p>Ticket Price: 1 TON</p>
+        <p>Prize Pool: <span id="prize-pool">0</span> TON</p>
+        <p>Participants: <span id="participant-count">0</span></p>
+    </div>
+    <button id="enter-raffle" style="display: none;">Enter Raffle</button>
+    <div id="winner-info" style="display: none;">
+        <h2>Winner</h2>
+        <p>Address: <span id="winner-address"></span></p>
+        <p>Prize: <span id="winner-prize"></span> TON</p>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
