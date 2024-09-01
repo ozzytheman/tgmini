@@ -3,40 +3,208 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TON Raffle TMA</title>
-    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+    <title>TON Raffle Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 600px;
+            max-width: 800px;
             margin: 0 auto;
             padding: 20px;
+            background-color: #f0f2f5;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #1a73e8;
         }
         button {
-            margin: 10px 0;
-            padding: 10px;
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
             cursor: pointer;
+            margin: 5px 0;
         }
-        #raffle-info, #winner-info {
+        button:hover {
+            background-color: #1557b0;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            box-sizing: border-box;
+        }
+        .raffle-card {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #f9f9f9;
+        }
+        #wallet-info, #admin-panel {
             margin-top: 20px;
+        }
+        .hidden {
+            display: none;
         }
     </style>
 </head>
 <body>
-    <h1>TON Raffle TMA</h1>
-    <div id="ton-connect"></div>
-    <div id="raffle-info">
-        <h2>Raffle Information</h2>
-        <p>Ticket Price: 1 TON</p>
-        <p>Prize Pool: <span id="prize-pool">0</span> TON</p>
-        <p>Participants: <span id="participant-count">0</span></p>
+    <div class="container">
+        <h1>TON Raffle Mini App</h1>
+        
+        <button id="connect-wallet">Connect TON Wallet</button>
+        
+        <div id="wallet-info" class="hidden">
+            <p>Connected: <span id="wallet-address"></span></p>
+            <p>Balance: <span id="wallet-balance"></span> TON</p>
+        </div>
+        
+        <h2>Available Raffles</h2>
+        <div id="raffles-list"></div>
+        
+        <div id="admin-panel" class="hidden">
+            <h2>Create New Raffle</h2>
+            <input type="text" id="raffle-name" placeholder="Raffle Name">
+            <input type="number" id="entry-price" placeholder="Entry Price (TON)">
+            <input type="number" id="max-participants" placeholder="Max Participants">
+            <button id="create-raffle">Create Raffle</button>
+        </div>
     </div>
-    <button id="enter-raffle" style="display: none;">Enter Raffle</button>
-    <div id="winner-info" style="display: none;">
-        <h2>Winner</h2>
-        <p>Address: <span id="winner-address"></span></p>
-        <p>Prize: <span id="winner-prize"></span> TON</p>
-    </div>
-    <script src="app.js"></script>
+
+    <script>
+        // Mock data and functions (replace with actual implementations)
+        let wallet = null;
+        let raffles = [];
+        const isAdmin = true; // Set to true for testing admin features
+
+        // Initialize Telegram Mini App
+        window.Telegram.WebApp.ready();
+
+        // DOM Elements
+        const connectWalletBtn = document.getElementById('connect-wallet');
+        const walletInfo = document.getElementById('wallet-info');
+        const walletAddress = document.getElementById('wallet-address');
+        const walletBalance = document.getElementById('wallet-balance');
+        const rafflesList = document.getElementById('raffles-list');
+        const adminPanel = document.getElementById('admin-panel');
+        const createRaffleBtn = document.getElementById('create-raffle');
+
+        // Event Listeners
+        connectWalletBtn.addEventListener('click', connectWallet);
+        createRaffleBtn.addEventListener('click', createRaffle);
+
+        // Mock wallet connection
+        async function connectWallet() {
+            wallet = { address: '0x1234...5678', balance: 100 };
+            updateWalletInfo();
+        }
+
+        function updateWalletInfo() {
+            if (wallet) {
+                walletAddress.textContent = wallet.address;
+                walletBalance.textContent = wallet.balance;
+                walletInfo.classList.remove('hidden');
+                connectWalletBtn.classList.add('hidden');
+            }
+        }
+
+        // Create a new raffle (admin function)
+        function createRaffle() {
+            const name = document.getElementById('raffle-name').value;
+            const entryPrice = parseFloat(document.getElementById('entry-price').value);
+            const maxParticipants = parseInt(document.getElementById('max-participants').value);
+            
+            if (name && entryPrice && maxParticipants) {
+                const newRaffle = {
+                    id: Date.now(),
+                    name,
+                    entryPrice,
+                    maxParticipants,
+                    currentParticipants: 0,
+                    prizePool: 0
+                };
+                raffles.push(newRaffle);
+                updateRafflesList();
+                clearRaffleForm();
+            }
+        }
+
+        // Update the displayed list of raffles
+        function updateRafflesList() {
+            rafflesList.innerHTML = '';
+            raffles.forEach(raffle => {
+                const raffleCard = document.createElement('div');
+                raffleCard.className = 'raffle-card';
+                raffleCard.innerHTML = `
+                    <h3>${raffle.name}</h3>
+                    <p>Entry Price: ${raffle.entryPrice} TON</p>
+                    <p>Participants: ${raffle.currentParticipants}/${raffle.maxParticipants}</p>
+                    <p>Prize Pool: ${raffle.prizePool} TON</p>
+                    <button onclick="enterRaffle(${raffle.id})">Enter Raffle</button>
+                `;
+                rafflesList.appendChild(raffleCard);
+            });
+        }
+
+        // Enter a raffle
+        async function enterRaffle(raffleId) {
+            if (!wallet) {
+                alert('Please connect your wallet first.');
+                return;
+            }
+
+            const raffle = raffles.find(r => r.id === raffleId);
+            if (!raffle) return;
+
+            const entryFee = raffle.entryPrice * 1.05; // Adding 5% fee
+            if (wallet.balance < entryFee) {
+                alert('Insufficient balance.');
+                return;
+            }
+
+            // Mock transaction
+            wallet.balance -= entryFee;
+            raffle.currentParticipants++;
+            raffle.prizePool += raffle.entryPrice;
+
+            updateWalletInfo();
+            updateRafflesList();
+
+            if (raffle.currentParticipants === raffle.maxParticipants) {
+                selectWinner(raffleId);
+            }
+        }
+
+        // Select a winner (mock implementation)
+        function selectWinner(raffleId) {
+            const raffle = raffles.find(r => r.id === raffleId);
+            if (!raffle) return;
+
+            alert(`A winner has been selected for ${raffle.name}! Prize: ${raffle.prizePool} TON`);
+            // In a real implementation, this would involve smart contract interaction
+        }
+
+        // Clear the raffle creation form
+        function clearRaffleForm() {
+            document.getElementById('raffle-name').value = '';
+            document.getElementById('entry-price').value = '';
+            document.getElementById('max-participants').value = '';
+        }
+
+        // Initial setup
+        if (isAdmin) {
+            adminPanel.classList.remove('hidden');
+        }
+
+        // You might want to load initial raffles here in a real application
+        updateRafflesList();
+    </script>
 </body>
 </html>
